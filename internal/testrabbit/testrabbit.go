@@ -1,6 +1,7 @@
 package testrabbit
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -11,10 +12,10 @@ import (
 type TestRabbit struct {
 	ConnectionStr string
 	QName         string
-	TxID          string
+	TxID          int
 }
 
-func NewTestRabbit(connectionStr string, qname string, t string) *TestRabbit {
+func NewTestRabbit(connectionStr string, qname string, t int) *TestRabbit {
 	return &TestRabbit{
 		ConnectionStr: connectionStr,
 		QName:         qname,
@@ -69,16 +70,28 @@ func (t *TestRabbit) DeleteTransactionFromQueue() {
 		}
 	}
 
-	for m := range msgs {
-		err = ch.Publish(
-			"",
-			t.QName,
-			false,
-			false,
-			amqp.Publishing{
-				ContentType: m.ContentType,
-				Body:        m.Body,
-			})
-		FailOnError(err, "Failed to publish a message")
-	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case m, ok := <-msgs:
+				if !ok {
+					return
+				}
+				err := ch.Publish(
+					"",
+					t.QName,
+					false,
+					false,
+					amqp.Publishing{
+						ContentType: m.ContentType,
+						Body:        m.Body,
+					})
+				FailOnError(err, "Failed to publish a message")
+			}
+		}
+	}()
 }

@@ -1,10 +1,10 @@
 package message
 
 type Message struct {
-	TransactionID string `json:"transaction_id"`
+	TransactionID int `json:"trans_id"`
 }
 
-func NewMessage(m string) *Message {
+func NewMessage(m int) *Message {
 	return &Message{
 		TransactionID: m,
 	}
