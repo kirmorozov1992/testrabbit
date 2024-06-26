@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	tr := testrabbit.NewTestRabbit("amqp://guest:guest@192.168.1.5:5672", "transactions", 12345)
+	tr := testrabbit.NewTestRabbit("amqp://guest:guest@192.168.1.6:5672", "transactions", 67890)
 	conn := tr.NewConn()
 	defer conn.Close()
 

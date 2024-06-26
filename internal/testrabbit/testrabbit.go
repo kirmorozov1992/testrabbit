@@ -1,7 +1,6 @@
 package testrabbit
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 
@@ -69,29 +68,4 @@ func (t *TestRabbit) DeleteTransactionFromQueue() {
 			break
 		}
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case m, ok := <-msgs:
-				if !ok {
-					return
-				}
-				err := ch.Publish(
-					"",
-					t.QName,
-					false,
-					false,
-					amqp.Publishing{
-						ContentType: m.ContentType,
-						Body:        m.Body,
-					})
-				FailOnError(err, "Failed to publish a message")
-			}
-		}
-	}()
 }
